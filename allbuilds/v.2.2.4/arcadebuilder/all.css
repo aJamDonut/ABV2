@@ -649,15 +649,6 @@ i[data-title]:hover:after {
 	margin-left: -75px;
 }
 
-@supports (-webkit-overflow-scrolling: touch) {
-@media ( max-height : 640px) {
-	#viewport {
-		padding-top: 60px;
-		padding-bottom: 60px;
-		height: 420px;
-	}
-}
-}
 
 
 
