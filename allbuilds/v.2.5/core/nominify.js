@@ -86,7 +86,7 @@ class WorldGraphic extends PIXI.Graphics {
 		try {
 			return super.destroy();
 		} catch(e) {
-			console.error(e);
+			console.log(e);
 		}
 	}
 	
@@ -492,6 +492,8 @@ redraw = function () {
 
 
 window.addEventListener('orientationchange', redraw);
+
+window.addEventListener("pageshow", redraw, false);
 
 /**
  * Number.prototype.format(n, x)
