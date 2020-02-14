@@ -1,0 +1,155 @@
+console.log("====BUILD START====");
+try {
+var fs = require('fs-extra');
+var UglifyJS = require("uglify-js");
+var minify = require('html-minifier').minify;
+var rimraf = require("rimraf");
+var jsob = require("javascript-obfuscator");
+var imagemin = require('imagemin');
+var imageminPngquant = require('imagemin-pngquant');
+} catch (e) {
+	console.log("Failed to load required libs... Exiting");
+	console.log("");
+	console.log(e);
+	process.exit();
+}
+
+function obf(str) {
+	console.log('Obfuscate characters: '+str.length);
+	try {
+	var obfuscationResult = jsob.obfuscate(str, {
+        compact: false,
+        controlFlowFlattening: true
+    });
+ 
+	return obfuscationResult.getObfuscatedCode();
+	} catch(e) {
+		console.log("Failed to obfuscate!");
+		console.log(e);
+		ex();
+	}
+}
+
+function mini(str) {
+	console.log('Minify characters: '+str.length);
+	try {
+		c = UglifyJS.minify(str, {mangle: false, compress:{drop_console: true}});
+		return c.code;
+	} catch(e) {
+		console.log("Failed to Minify!");
+		console.log(e);
+		ex();
+	}
+}
+
+function ex() {
+	process.exit();
+}
+
+function del(f) {
+	console.log("Delete "+f);
+	try {
+		rimraf.sync(f);
+	} catch (e) {
+		console.log(e);
+	}
+}
+
+function imageCopy (src,dest) {
+	try {
+		(async () => {
+		await imagemin([src], {
+			destination: dest,
+			verbose: true,
+			strip: true,
+			plugins: [
+				imageminPngquant({
+					strip: true,
+					quality: [0.5, 0.6],
+					verbose: true,
+				})
+			]
+		});
+
+		console.log('Images optimized');
+		})();
+	} catch (err) {
+		console.error(err);
+	}
+}
+
+function mkdir(dir) {
+	fs.mkdirSync(dir);
+}
+
+function xcopy(src, dest) {
+	console.log('Try Copying: '+src+' to '+dest);
+	try {
+	  return fs.copySync(src, dest);
+	} catch (err) {
+	  console.error(err)
+	}
+}
+
+
+function write(dest, txt) {
+	console.log('Try Write: '+txt.length+' characters to '+dest);
+	try {
+	  return fs.writeFileSync(dest, txt);
+	} catch (err) {
+	  console.error(err)
+	}
+}
+
+function read(src) {
+	console.log('Try Read: '+src);
+	try {
+	  return fs.readFileSync(src, "utf8");
+	} catch (err) {
+	  console.error(err)
+	}
+}
+
+var gameName = process.argv[2];
+var profile = process.argv[3] || "NOPROFILE";
+
+del(buildRoot);
+try {
+mkdir("../build/"+gameName);
+} catch(e){
+	
+}
+mkdir(buildRoot);
+
+
+mkdir(buildRoot+"/"+gameName);
+mkdir(buildRoot+"/core");
+
+
+
+console.log("Do compression");
+
+
+xcopy(gameRoot + '/atlas.json', assetRoot+'/atlas.json');
+xcopy('../precalc-'+gameName+'.html', buildRoot+'/index.html');
+
+xcopy('../package.json', buildRoot+'/package.json');
+
+xcopy('../lib', buildRoot+'/lib');
+
+xcopy(gameRoot + '/audio', assetRoot+'/audio');
+
+del(assetRoot+'/audio/check')
+
+imageCopy(gameRoot + '/png/*.png', assetRoot+'/png');
+
+xcopy(gameRoot + '/js/languages', assetRoot+'/js/languages');
+
+xcopy(gameRoot + '/css', assetRoot+'/css');
+
+xcopy('../core/css', buildRoot+'/core/css');
+xcopy('../core/nominify.js', buildRoot+'/core/nominify.js');
+
+
+
+console.log("Complete!");
